@@ -1,8 +1,6 @@
 package com.product.controller;
 
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -53,6 +51,8 @@ public class ProductController {
 			return new ResponseEntity<Prodotto>(prod,HttpStatus.OK);
 		} catch (DataIntegrityViolationException e) {
 			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

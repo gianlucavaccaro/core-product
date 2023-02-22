@@ -1,10 +1,9 @@
 package com.product.service;
 
 import java.util.List;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.product.exception.ResourceNotFoundException;
 import com.product.model.Prodotto;
@@ -29,6 +28,7 @@ public class ProductService {
 		return productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 	}
 	
+	@Transactional
 	public Prodotto createProduct(String descrizioneProdotto) {
 		Prodotto prod= new Prodotto(descrizioneProdotto);
 		return productRepository.save(prod);
