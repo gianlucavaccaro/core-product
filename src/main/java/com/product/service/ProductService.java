@@ -10,39 +10,40 @@ import com.product.model.Prodotto;
 import com.product.repository.ProductRepository;
 
 @Service
+@Transactional
 public class ProductService {
 
 	@Autowired
 	ProductRepository productRepository;
-	
-	public ProductService() {
-	}
 
-	/*READ restituisce la lista di tutti i prodotti*/
+	/*restituisce la lista di tutti i prodotti*/
 	public List<Prodotto> retrieveAllProducts(){
 		return productRepository.findAll();
 	}
 	
-	/*READ restituisce il prodotto con l'id specificato in input*/
+	/*restituisce il prodotto specificando il suo id*/
 	public Prodotto retrieveById(Long id) throws ResourceNotFoundException {
 		return productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 	}
 	
-	@Transactional
+	/*crea un nuovo prodotto*/
 	public Prodotto createProduct(String descrizioneProdotto) {
 		Prodotto prod= new Prodotto(descrizioneProdotto);
 		return productRepository.save(prod);
 	}
 	
-	/*UPDATE aggiorna il prodotto con l'id specificato in input con la nuova descrizione passata in input*/
+	/*aggiorna il prodotto con l'id specificato in input con la nuova descrizione passata in input*/
 	public Prodotto updateProdotto(Long id, String descrizione) throws ResourceNotFoundException {
 		Prodotto prodotto= productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 		prodotto.setDescrizioneProdotto(descrizione);
 		return productRepository.save(prodotto);
 	}
 	
+	/*cancellazione di un prodotto*/
 	public void deleteProdotto(Long id) throws ResourceNotFoundException {
 		Prodotto prodotto= productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 		productRepository.delete(prodotto);
 	}
+	
+	
 }
