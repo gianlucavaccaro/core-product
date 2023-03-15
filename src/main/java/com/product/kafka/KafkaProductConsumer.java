@@ -1,5 +1,7 @@
 package com.product.kafka;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -22,6 +24,8 @@ public class KafkaProductConsumer {
 	
 	private ObjectMapper objectMapper;
 	
+	private static final Logger logger = LogManager.getLogger(KafkaProductConsumer.class);
+	
 	@PostConstruct
 	public void init() {
 		objectMapper=new ObjectMapper();
@@ -43,7 +47,7 @@ public class KafkaProductConsumer {
 	public void consume(String message) throws JsonProcessingException{
 		TrackingEvent productRecord=new TrackingEvent();
 		OrderEvent event= objectMapper.readValue(message, OrderEvent.class);
-		System.out.println("Messaggio in product ricevuto:"+ event.getLastTracking().toString());
+		logger.info("Received an OrderEvent in core-product for product id: " + event.getIdProdotto());
 		
 		try {
 			productRecord= event.getLastTracking();
@@ -51,16 +55,19 @@ public class KafkaProductConsumer {
 			service.retrieveById(event.getIdProdotto());
 			productRecord.setStatus("OK");
 			event.getTracking().add(productRecord);
+			logger.info("Sending OrderEvent back to topic with present product id: " + event.getIdProdotto());
 			producer.sendAckProductOrder(event);
-			System.out.println("Messaggio in product ricevuto."+ event.getLastTracking().getServiceName().toString());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			productRecord.setStatus("KO");
 			productRecord.setServiceName("core-product");
-			if(e instanceof ResourceNotFoundException)
-				productRecord.setFailureReason("Product not found.");
+			if(e instanceof ResourceNotFoundException) {
+				logger.info("Product with id "+ event.getIdProdotto()+" not found.");
+				productRecord.setFailureReason("ID_NOT_PRESENT");
+			}
 			event.getTracking().add(productRecord);
+			logger.error("KO. Sending OrderEvent back from core-product to orchestrator with present product id: " + event.getIdProdotto());
 			producer.sendAckProductOrder(event);
 		}
 	}
